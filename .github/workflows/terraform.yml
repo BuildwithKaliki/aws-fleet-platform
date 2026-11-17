@@ -1,0 +1,32 @@
+name: terraform-pr-lane
+
+# The PR lane: every pull request gets fmt + validate + plan.
+# Plan output is posted to the PR - reviewers never run terraform locally.
+# This is the "paved road" pattern: propose -> CI plans -> review -> merge applies.
+
+on:
+  pull_request:
+    paths:
+      - "modules/**"
+      - "environments/**"
+      - ".github/workflows/terraform.yml"
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - name: fmt + validate all modules and environments
+        run: |
+          terraform fmt -check -recursive modules environments
+          for d in modules/vpc modules/eks modules/rds environments/dev; do
+            (cd "$d" && terraform init -backend=false && terraform validate)
+          done
