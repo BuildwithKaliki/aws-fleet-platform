@@ -1,0 +1,9 @@
+# Local artifacts are never committed
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars  # real values stay local; tfvars.example is committed
+*.tfvars.json
+.env
